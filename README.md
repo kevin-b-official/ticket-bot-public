@@ -64,6 +64,9 @@ It provides a full support workflow including ticket creation, claiming, closing
 ├─ .env.example
 ├─ deploy-commands.js
 ├─ index.js
+├─ README.md
+├─ LICENSE.txt
+├─ CONFIG_GUIDE.md
 ├─ /src
 │  ├─ /commands
 │  │  ├─ ticketlogs.js
@@ -77,6 +80,9 @@ It provides a full support workflow including ticket creation, claiming, closing
 │  ├─ /utils
 │  │  ├─ transcript.js
 │  │  ├─ logger.js
+│  │  ├─ automation.js
+│  │  ├─ logEmbed.js
+│  │  ├─ fallback.js
 │  │  └─ sanitizer.js
 │  └─ config.js
 └─ /data
