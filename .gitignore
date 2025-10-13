@@ -1,0 +1,259 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+.pnp/
+.pnp.js
+.pnp.cjs
+.pnp.loader.mjs
+
+# Yarn v2+ cache & state (keep releases/plugins if committed)
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/patches
+!.yarn/versions
+!.yarn/sdks
+!.yarn/constraints
+.yarn/install-state.gz
+.yarn/build-state.yml
+
+# Build output
+dist/
+build/
+out/
+lib/
+public/
+
+# Next.js
+.next/
+.next/cache/
+
+# Nuxt, Gatsby, Vuepress, etc.
+.nuxt/
+.cache/
+.cache/
+.cache-loader/
+.cache/
+.gatsby/
+.vuepress/dist/
+
+# Parcel, Vite, Snowpack caches
+.parcel-cache/
+.vite/
+.snowpack/
+
+# Coverage
+coverage/
+coverage-final.json
+.nyc_output/
+
+# TypeScript
+*.tsbuildinfo
+
+# Test result output
+jest-report.xml
+test-results/
+
+# Optional npm cache directory
+.npm
+
+# Temporary folders
+tmp/
+temp/
+*.tmp
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment files (ignore secrets); keep example files in repo if present
+.env
+.env.*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# Misc
+*.log.*
+*.tgz
+.cache-loader
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+webpack-stats.json
+info/
+data/
+
+# Lockfiles: usually committed — do NOT ignore package-lock.json or yarn.lock
+# If you intentionally want to ignore lockfiles, uncomment below:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Firebase, serverless, and generated folders
+.firebase/
+.serverless/
+
+# Generated docs/site
+docs/_site/
+
+# Editors backup files
+*~
+*.swp
+*.swo
+
+...existing code...
+```// filepath: c:\dev\discord-ticket-bot\.gitignore
+
+...existing code...
+# Node.js .gitignore — comprehensive template for apps/projects
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+.pnp/
+.pnp.js
+.pnp.cjs
+.pnp.loader.mjs
+
+# Yarn v2+ cache & state (keep releases/plugins if committed)
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/patches
+!.yarn/versions
+!.yarn/sdks
+!.yarn/constraints
+.yarn/install-state.gz
+.yarn/build-state.yml
+
+# Build output
+dist/
+build/
+out/
+lib/
+public/
+
+# Next.js
+.next/
+.next/cache/
+
+# Nuxt, Gatsby, Vuepress, etc.
+.nuxt/
+.cache/
+.cache/
+.cache-loader/
+.cache/
+.gatsby/
+.vuepress/dist/
+
+# Parcel, Vite, Snowpack caches
+.parcel-cache/
+.vite/
+.snowpack/
+
+# Coverage
+coverage/
+coverage-final.json
+.nyc_output/
+
+# TypeScript
+*.tsbuildinfo
+
+# Test result output
+jest-report.xml
+test-results/
+
+# Optional npm cache directory
+.npm
+
+# Temporary folders
+tmp/
+temp/
+*.tmp
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment files (ignore secrets); keep example files in repo if present
+.env
+.env.*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# Misc
+*.log.*
+*.tgz
+.cache-loader
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+webpack-stats.json
+
+# Lockfiles: usually committed — do NOT ignore package-lock.json or yarn.lock
+# If you intentionally want to ignore lockfiles, uncomment below:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Firebase, serverless, and generated folders
+.firebase/
+.serverless/
+
+# Generated docs/site
+docs/_site/
+
+# Editors backup files
+*~
+*.swp
+*.swo
