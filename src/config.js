@@ -29,27 +29,27 @@ module.exports = {
     // Permissions Configuration
     permissions: {
       allowTicketOwnerClose: false, // if true, ticket owner can close their own ticket
-      allowTicketOwnerClaim: true, // if true, owner can claim (not recommended)
+      allowTicketOwnerClaim: false, // if true, owner can claim (not recommended)
       requireClaimToForward: true // ticket must be claimed before forwarding
     },
 
     // Ticket Automation
     automation: {
-      enabled: false, // master switch for all automation
+      enabled: true, // master switch for all automation
       inactivityWarning: {
-        enabled: false,
+        enabled: true,
         thresholdMinutes: 60, // warn after 60 min of no messages
         message: '⚠️ This ticket has been inactive for a while. Please respond or it may be auto-closed.'
       },
       autoClose: {
-        enabled: false,
+        enabled: true,
         inactivityMinutes: 120, // auto-close after 120 min of inactivity
         notifyOwner: true
       },
       unclaimedReminder: {
-        enabled: false,
-        intervalMinutes: 30, // remind support every 30 min about unclaimed tickets
-        channelId: null // where to send reminders (defaults to logChannelId)
+        enabled: true,
+        intervalMinutes: 15, // remind support every 15 min about unclaimed tickets
+        channelId: '1295911446307278970' // where to send reminders (value null = logChannelId)
       },
       welcomeMessage: {
         enabled: true,
@@ -62,7 +62,7 @@ module.exports = {
     embed: {
       color: 0x5865f2,
       description: null, // custom description (null = use default)
-      image: 'https://placehold.co/1280x720/png?text=Ticket+Support+Image&font=roboto', // big image at the bottom of the embed
+      image: 'https://i.imgur.com/ifHx66U.png', // big image at the bottom of the embed
       thumbnail: null, // small image at top right
       footer: {
         text: 'Developed by Horizov',
@@ -86,19 +86,19 @@ module.exports = {
       close: {
         id: 'ticket_close',
         label: 'Close Ticket',
-        emoji: null, // e.g., '🔒'
+        emoji: '🔒', // e.g., '🔒'
         style: 'Danger' // Primary | Secondary | Success | Danger
       },
       claim: {
         id: 'ticket_claim',
         label: 'Claim',
-        emoji: null, // e.g., '✋'
+        emoji: '✋', // e.g., '✋'
         style: 'Primary'
       },
       forward: {
         id: 'ticket_forward',
         label: 'Forward',
-        emoji: null, // e.g., '➡️'
+        emoji: '➡️', // e.g., '➡️'
         style: 'Secondary'
       }
     },
@@ -133,7 +133,7 @@ module.exports = {
       title: '🎫 Create a Ticket',
       description: 'Please select the ticket type from the menu below. Our support team will respond shortly.',
       color: 0x5865f2,
-      image: 'https://placehold.co/1280x720/png?text=Ticket+Support+Image&font=roboto',
+      image: 'https://i.imgur.com/ifHx66U.png',
       thumbnail: null,
       footer: {
         text: 'Developed by Horizov',

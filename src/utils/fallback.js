@@ -1,3 +1,4 @@
+const { setTimeout } = require('node:timers/promises');
 const config = require('../config');
 
 async function sendTranscriptFallback(guild, userId, transcriptPath) {
@@ -5,20 +6,24 @@ async function sendTranscriptFallback(guild, userId, transcriptPath) {
   if (!fallbackChannelId) return;
 
   try {
-    const channel = await guild.channels.fetch(fallbackChannelId);
-    if (!channel || !channel.isTextBased()) return;
+    const channel = await guild.channels.fetch(fallbackChannelId).catch(() => null);
+    if (!channel?.isTextBased()) return;
 
     const msg = await channel.send({
       content: `<@${userId}> I couldn't send your transcript via DM. Here it is instead:`,
       files: [{ attachment: transcriptPath }]
     });
 
-    // auto-delete after configured minutes
-    const deleteAfterMs = (config.ticket.transcriptAutoDeleteMinutes || 5) * 60 * 1000;
-    setTimeout(() => msg.delete().catch(() => {}), deleteAfterMs);
+    // ✅ Configurable safety guard for auto-deletion
+    const minutes = Math.max(1, config.ticket.transcriptAutoDeleteMinutes || 5); // ensure min 1 minute
+    const deleteAfterMs = minutes * 60 * 1000;
+
+    // Using Promise-based timeout (cleaner async)
+    await setTimeout(deleteAfterMs);
+    await msg.delete().catch(() => {});
 
   } catch (err) {
-    console.error("Transcript fallback failed:", err);
+    console.error(`[TranscriptFallback] Failed for user ${userId}:`, err);
   }
 }
 

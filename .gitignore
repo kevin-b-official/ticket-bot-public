@@ -257,3 +257,4 @@ docs/_site/
 *~
 *.swp
 *.swo
+package-lock.json
