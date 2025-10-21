@@ -19,7 +19,8 @@ module.exports = {
 
     await interaction.deferReply({ ephemeral: true });
 
-    const tickets = db.getAllTickets();
+    const guildId = interaction.guild.id;
+    const tickets = await db.getAllTickets(guildId);
     if (!tickets || tickets.length === 0) {
       return interaction.editReply({
         embeds: [

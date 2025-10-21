@@ -44,47 +44,48 @@ class TicketAutomation {
     this.client.on('messageCreate', async (message) => {
       if (!message.channel.name?.startsWith('ticket-')) return;
       if (message.author.bot) return;
+      if (!message.guild) return;
 
-      this.resetInactivityTimer(message.channel);
+      const guildConfig = await this.db.getGuildConfig(message.guild.id);
+      if (!guildConfig || !guildConfig.automation_enabled) return;
+
+      this.resetInactivityTimer(message.channel, guildConfig);
     });
   }
 
-  resetInactivityTimer(channel) {
+  resetInactivityTimer(channel, guildConfig) {
     const channelId = channel.id;
 
     if (this.inactivityTimers.has(channelId)) {
       clearTimeout(this.inactivityTimers.get(channelId));
     }
 
-    const warningConfig = this.automation.inactivityWarning;
-    const autoCloseConfig = this.automation.autoClose;
-
-    if (warningConfig?.enabled) {
+    if (guildConfig.inactivity_warning_enabled) {
       const warningTimeout = setTimeout(async () => {
         try {
-          await channel.send(warningConfig.message || '⚠️ This ticket has been inactive for a while.');
+          await channel.send(this.automation.inactivityWarning?.message || '⚠️ This ticket has been inactive for a while.');
         } catch (err) {
           log('error', 'Failed to send inactivity warning', err);
         }
-      }, (warningConfig.thresholdMinutes || 60) * 60 * 1000);
+      }, (guildConfig.inactivity_warning_minutes || 60) * 60 * 1000);
 
       this.inactivityTimers.set(channelId, warningTimeout);
     }
 
-    if (autoCloseConfig?.enabled) {
+    if (guildConfig.auto_close_enabled) {
       const closeTimeout = setTimeout(async () => {
         try {
-          await this.autoCloseTicket(channel, autoCloseConfig.notifyOwner);
+          await this.autoCloseTicket(channel, true, guildConfig);
         } catch (err) {
           log('error', 'Failed to auto-close ticket', err);
         }
-      }, (autoCloseConfig.inactivityMinutes || 120) * 60 * 1000);
+      }, (guildConfig.auto_close_minutes || 120) * 60 * 1000);
 
       this.inactivityTimers.set(`${channelId}_close`, closeTimeout);
     }
   }
 
-  async autoCloseTicket(channel, notifyOwner = true) {
+  async autoCloseTicket(channel, notifyOwner = true, guildConfig) {
     log('log', `Auto-closing inactive ticket: ${channel.name}`);
 
     const { fetchAllMessages, saveTranscriptHtml } = require('./transcript');
@@ -101,7 +102,7 @@ class TicketAutomation {
         messages
       );
 
-      this.db.updateTicketClosure({
+      await this.db.updateTicketClosure({
         ticket_name: channel.name,
         support_id: 'system',
         support_tag: 'Automated',
@@ -135,23 +136,38 @@ class TicketAutomation {
   }
 
   startUnclaimedReminders() {
-    const reminderConfig = this.automation.unclaimedReminder;
-    const intervalMs = (reminderConfig.intervalMinutes || 30) * 60 * 1000;
-
-    log('log', `Unclaimed ticket reminders enabled (every ${reminderConfig.intervalMinutes || 30} minutes)`);
+    log('log', 'Unclaimed ticket reminders enabled');
 
     this.reminderInterval = setInterval(async () => {
-      await this.checkUnclaimedTickets(reminderConfig.channelId);
-    }, intervalMs);
+      await this.checkAllGuildsForUnclaimedTickets();
+    }, 15 * 60 * 1000);
   }
 
-  async checkUnclaimedTickets(channelId) {
+  async checkAllGuildsForUnclaimedTickets() {
     try {
-      const openTickets = this.db.getAllTickets().filter(t => !t.closed_at && !t.support_id);
+      const guilds = this.client.guilds.cache;
+
+      for (const [guildId, guild] of guilds) {
+        const guildConfig = await this.db.getGuildConfig(guildId);
+
+        if (!guildConfig || !guildConfig.automation_enabled || !guildConfig.unclaimed_reminder_enabled) {
+          continue;
+        }
+
+        await this.checkUnclaimedTickets(guildId, guild, guildConfig);
+      }
+    } catch (err) {
+      log('error', 'Failed to check unclaimed tickets across guilds', err);
+    }
+  }
+
+  async checkUnclaimedTickets(guildId, guild, guildConfig) {
+    try {
+      const openTickets = await this.db.getUnclaimedTickets(guildId);
 
       if (openTickets.length === 0) return;
 
-      const logChannelId = channelId || config.ticket?.logChannelId || config.env.logChannelId;
+      const logChannelId = guildConfig.log_channel_id;
       if (!logChannelId) return;
 
       const channel = await this.client.channels.fetch(logChannelId);
@@ -163,7 +179,7 @@ class TicketAutomation {
         content: `⚠️ **Unclaimed Tickets Reminder**\n\n${ticketList}\n\nPlease assign support members to these tickets.`
       });
 
-      log('log', `Sent unclaimed ticket reminder for ${openTickets.length} tickets`);
+      log('log', `Sent unclaimed ticket reminder for ${openTickets.length} tickets in guild ${guild.name}`);
     } catch (err) {
       log('error', 'Failed to send unclaimed reminder', err);
     }

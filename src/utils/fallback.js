@@ -1,8 +1,8 @@
 const { setTimeout } = require('node:timers/promises');
 const config = require('../config');
 
-async function sendTranscriptFallback(guild, userId, transcriptPath) {
-  const fallbackChannelId = config.ticket.transcriptFallbackChannelId || config.env.transcriptFallbackChannelId;
+async function sendTranscriptFallback(guild, userId, transcriptPath, guildConfig = null) {
+  const fallbackChannelId = guildConfig?.transcript_fallback_channel_id || config.ticket.transcriptFallbackChannelId || config.env.transcriptFallbackChannelId;
   if (!fallbackChannelId) return;
 
   try {

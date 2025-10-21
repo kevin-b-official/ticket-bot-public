@@ -27,7 +27,7 @@ for (const file of eventFiles) {
 }
 
 const config = require('./src/config');
-const db = require('./src/database/db');
+const db = require('./src/database/supabase');
 const { TicketAutomation } = require('./src/utils/automation');
 
 // initialize automation after client is ready

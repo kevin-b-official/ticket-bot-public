@@ -90,50 +90,51 @@ module.exports = {
         await interaction.deferReply({ ephemeral: true }).catch(() => {});
 
         const type = interaction.values[0];
+        const guildId = interaction.guild.id;
 
-        // Check if user already has a ticket (same logic as original)
-        const existing = interaction.guild.channels.cache.find(c =>
-          c.topic?.startsWith(`ticket_owner:${interaction.user.id}`) && c.type === ChannelType.GuildText
-        );
-        if (existing) return interaction.editReply({ content: ticketCfg.messages?.alreadyOpen || '⚠️ You already have an open ticket!' });
+        const guildConfig = await db.getGuildConfig(guildId);
+        if (!guildConfig || !guildConfig.support_role_id || !guildConfig.ticket_category_id) {
+          return interaction.editReply({ content: 'Ticket system not configured. Please ask an admin to run /setup first.' });
+        }
+
+        const existingTicket = await db.getUserOpenTickets(guildId, interaction.user.id);
+        if (existingTicket) {
+          return interaction.editReply({ content: ticketCfg.messages?.alreadyOpen || '⚠️ You already have an open ticket!' });
+        }
 
         const createdAt = new Date().toISOString();
         const tempName = `pending-${Date.now()}`;
 
-        // Insert into DB (your original db.insertTicket signature)
-        const dbId = db.insertTicket({
-          ticket_name: tempName,
-          type,
-          creator_id: interaction.user.id,
-          creator_tag: interaction.user.tag,
-          created_at: createdAt
-        });
-
-        const ticketName = `ticket-${dbId}`;
-
-        // Resolve category / support role IDs from config or env
-        const categoryId = ticketCfg.categoryId || env.ticketCategoryId || process.env.TICKET_CATEGORY_ID;
-        const supportRoleId = ticketCfg.supportRoleId || env.supportRoleId || process.env.SUPPORT_ROLE_ID;
-
-        // Create channel
         const channel = await interaction.guild.channels.create({
-          name: ticketName,
+          name: tempName,
           type: ChannelType.GuildText,
-          parent: categoryId,
+          parent: guildConfig.ticket_category_id,
           topic: `ticket_owner:${interaction.user.id}`,
           permissionOverwrites: [
             { id: interaction.guild.id, deny: [PermissionFlagsBits.ViewChannel] },
             { id: interaction.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] },
-            { id: supportRoleId, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] }
+            { id: guildConfig.support_role_id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] }
           ]
         });
 
-        // Update DB ticket_name
-        try {
-          db.db.prepare('UPDATE tickets SET ticket_name = ? WHERE id = ?').run(ticketName, dbId);
-        } catch (err) {
-          log('error', 'db update ticket_name failed', err);
-        }
+        const ticket = await db.insertTicket({
+          guildId,
+          ticket_name: channel.name,
+          type,
+          creator_id: interaction.user.id,
+          creator_tag: interaction.user.tag,
+          channel_id: channel.id
+        });
+
+        const ticketName = `ticket-${ticket.ticket_number}`;
+
+        await channel.setName(ticketName).catch(() => {});
+        await db.supabase
+          .from('tickets')
+          .update({ ticket_name: ticketName })
+          .eq('id', ticket.id);
+
+        const supportRoleId = guildConfig.support_role_id;
 
         // Build action row (buttons)
         const actionRow = new ActionRowBuilder().addComponents(
@@ -274,6 +275,13 @@ module.exports = {
         // --- Claim Ticket ---
         if (customId === BUTTONS.claim.id) {
           const member = interaction.member;
+          const guildId = interaction.guild.id;
+          const guildConfig = await db.getGuildConfig(guildId);
+
+          if (!guildConfig || !guildConfig.support_role_id) {
+            return safeReply(interaction, { content: 'Ticket system not configured.', ephemeral: true });
+          }
+
           const ownerId = (channel.topic?.match(/ticket_owner:(\d+)/) || [])[1];
           const claimedByMatch = channel.topic?.match(/claimed_by:(\d+)/);
           const currentClaimer = claimedByMatch ? claimedByMatch[1] : null;
@@ -281,7 +289,7 @@ module.exports = {
           if (interaction.user.id === ownerId)
             return safeReply(interaction, { content: ticketCfg.messages?.cannotClaimOwn || '❌ You cannot claim your own ticket.', ephemeral: true });
 
-          const supportRoleId = ticketCfg.supportRoleId || env.supportRoleId || process.env.SUPPORT_ROLE_ID;
+          const supportRoleId = guildConfig.support_role_id;
           if (!member.roles.cache.has(supportRoleId))
             return safeReply(interaction, { content: ticketCfg.messages?.onlySupport || 'Only support members can claim tickets.', ephemeral: true });
 
@@ -321,9 +329,16 @@ module.exports = {
         // --- Forward Ticket (open select menu) ---
         if (customId === BUTTONS.forward.id) {
           const member = interaction.member;
+          const guildId = interaction.guild.id;
+          const guildConfig = await db.getGuildConfig(guildId);
+
+          if (!guildConfig || !guildConfig.support_role_id) {
+            return safeReply(interaction, { content: 'Ticket system not configured.', ephemeral: true });
+          }
+
           const claimedBy = (channel.topic?.match(/claimed_by:(\d+)/) || [])[1];
 
-          const supportRoleId = ticketCfg.supportRoleId || env.supportRoleId || process.env.SUPPORT_ROLE_ID;
+          const supportRoleId = guildConfig.support_role_id;
           if (!member.roles.cache.has(supportRoleId))
             return safeReply(interaction, { content: ticketCfg.messages?.notAuthorized || 'Not authorized.', ephemeral: true });
 
